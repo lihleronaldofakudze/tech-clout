@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:tech_clout/models/post.dart';
-import 'package:tech_clout/models/user.dart';
+import 'package:tech_clout/models/registered_user.dart';
+import 'package:tech_clout/services/database.dart';
 
 class PostsList extends StatefulWidget {
   const PostsList({Key key}) : super(key: key);
@@ -11,103 +13,125 @@ class PostsList extends StatefulWidget {
 }
 
 class _PostsListState extends State<PostsList> {
-  final posts = [
-    Post(user: User(image: 'assets/images/guy.png', username: 'Username', town: 'Town'), message: 'I am self taught software developer, living in Mbabane, doing freelancing jobs.', likes: 0, comments: 0),
-    Post(user: User(image: 'assets/images/guy.png', username: 'Username', town: 'Town'), message: 'I am self taught software developer, living in Mbabane, doing freelancing jobs.', likes: 0, comments: 0),
-    Post(user: User(image: 'assets/images/guy.png', username: 'Username', town: 'Town'), message: 'I am self taught software developer, living in Mbabane, doing freelancing jobs.', likes: 0, comments: 0),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final posts = Provider.of<List<Post>>(context);
+    final registeredUser = Provider.of<RegisteredUser>(context);
     return ListView.builder(
       itemCount: posts.length,
       itemBuilder: (context, index) {
         return Card(
           margin: EdgeInsets.all(10),
           elevation: 10,
-          child: Column(
-            children: [
-              ListTile(
-                leading: CircleAvatar(
-                  radius: 20,
-                  backgroundImage: AssetImage(posts[index].user.image),
-                  backgroundColor: Colors.black,
-                ),
-                title: Text(
-                  '${posts[index].user.username}',
-                  style: GoogleFonts.sourceCodePro(
-                      fontWeight: FontWeight.bold
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/comments',
+                  arguments: posts[index].id);
+            },
+            child: Column(
+              children: [
+                ListTile(
+                  leading: CircleAvatar(
+                    radius: 20,
+                    backgroundImage: NetworkImage(posts[index].userImage),
+                    backgroundColor: Colors.black,
+                  ),
+                  title: Text(
+                    '${posts[index].username}',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    '${DateFormat('yyyy-MM-dd - kk:mm').format(posts[index].postedAt.toDate())}',
+                  ),
+                  trailing: IconButton(
+                    onPressed: () async {
+                      if (posts[index].savedBy.contains(registeredUser.uid)) {
+                        await DatabaseService(
+                                uid: registeredUser.uid,
+                                postId: posts[index].id)
+                            .save();
+                      } else {
+                        await DatabaseService(
+                                uid: registeredUser.uid,
+                                postId: posts[index].id)
+                            .remove();
+                      }
+                    },
+                    icon: Icon(posts[index].savedBy.contains(registeredUser.uid)
+                        ? Icons.done
+                        : Icons.archive_outlined),
                   ),
                 ),
-                subtitle: Text(
-                  '${posts[index].user.town}',
-                  style: GoogleFonts.sourceCodePro(
-
-                  ),
+                Container(
+                  height: 250,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: NetworkImage(posts[index].image),
+                          fit: BoxFit.cover)),
                 ),
-                trailing: IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.archive_outlined
-                  ),
+                Text(
+                  '${posts[index].message}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
-              ),
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                    image: DecorationImage(
-                        image: AssetImage('assets/images/comment.png'),
-                        fit: BoxFit.cover
-                    )
-                ),
-                child: Container(
-                  height: 200,
-                  color: Color.fromRGBO(0, 0, 0, 0.8),
-                  child: Center(
-                    child: Text(
-                      '${posts[index].message}',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.sourceCodePro(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.all(10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'a day ago - ${posts[index].likes} Like',
-                      style: GoogleFonts.sourceCodePro(
-                        fontWeight: FontWeight.bold
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.favorite,
-                            color: Colors.red,
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      posts[index].likes.length == 0
+                          ? Text(
+                              'No Likes',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            )
+                          : Text(
+                              '${posts[index].likes.length} Likes',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () async {
+                              if (posts[index]
+                                  .likes
+                                  .contains(registeredUser.uid)) {
+                                await DatabaseService(
+                                        uid: registeredUser.uid,
+                                        postId: posts[index].id)
+                                    .like();
+                              } else {
+                                await DatabaseService(
+                                        uid: registeredUser.uid,
+                                        postId: posts[index].id)
+                                    .unlike();
+                              }
+                            },
+                            icon:
+                                posts[index].likes.contains(registeredUser.uid)
+                                    ? Icon(
+                                        Icons.favorite,
+                                        color: Colors.red,
+                                      )
+                                    : Icon(Icons.favorite_outlined),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () {},
-                          icon: Icon(
-                            Icons.message_outlined,
-                          ),
-                        )
-                      ],
-                    )
-                  ],
-                ),
-              )
-            ],
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/comments',arguments: posts[index].id);
+                            },
+                            icon: Icon(
+                              Icons.message_outlined,
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         );
       },

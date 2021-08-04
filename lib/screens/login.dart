@@ -1,11 +1,28 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:tech_clout/services/auth.dart';
 
-class Login extends StatelessWidget {
+class Login extends StatefulWidget {
   const Login({Key key}) : super(key: key);
 
   @override
+  _LoginState createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  ProgressDialog _progressDialog;
+  @override
   Widget build(BuildContext context) {
+    _progressDialog = ProgressDialog(context,
+        type: ProgressDialogType.Normal,
+        textDirection: TextDirection.ltr,
+        isDismissible: false);
+    _progressDialog.style(message: 'Please wait');
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -15,11 +32,9 @@ class Login extends StatelessWidget {
               Container(
                 height: 200,
                 decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/login.png'),
-                    fit: BoxFit.cover
-                  )
-                ),
+                    image: DecorationImage(
+                        image: AssetImage('assets/images/login.png'),
+                        fit: BoxFit.cover)),
               ),
               Text(
                 'Welcome Back',
@@ -33,62 +48,64 @@ class Login extends StatelessWidget {
                 height: 20,
               ),
               Text(
-                'Login to access your account',
+                'Please enter all details',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.sourceCodePro(
-                    fontSize: 18,
-                    color: Colors.grey
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               SizedBox(
-                height: 30,
+                height: 10,
               ),
               Form(
+                key: _formKey,
                 child: Column(
                   children: [
-                    SizedBox(
-                      height: 20,
-                    ),
                     PhysicalModel(
                       color: Colors.white,
                       elevation: 8,
                       child: TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please enter email';
+                          } else if (!EmailValidator.validate(value)) {
+                            return 'Invalid Email';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                             hintText: 'Email',
-                            hintStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 18
-                            ),
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 18),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.only(top: 15),
-                            prefixIcon: Icon(
-                                Icons.email_outlined
-                            )
-                        ),
+                            prefixIcon: Icon(Icons.email_outlined)),
                       ),
                     ),
                     SizedBox(
-                      height: 20,
+                      height: 10,
                     ),
                     PhysicalModel(
                       color: Colors.white,
                       elevation: 8,
                       child: TextFormField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        keyboardType: TextInputType.visiblePassword,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please enter password';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                             hintText: 'Password',
-                            hintStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 18
-                            ),
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 18),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.only(top: 15),
-                            prefixIcon: Icon(
-                                Icons.lock_outline
-                            ),
-                            suffixIcon: Icon(
-                                Icons.remove_red_eye_outlined
-                            )
-                        ),
+                            prefixIcon: Icon(Icons.lock_outline),
+                            suffixIcon: Icon(Icons.remove_red_eye_outlined)),
                       ),
                     ),
                   ],
@@ -97,13 +114,50 @@ class Login extends StatelessWidget {
               SizedBox(
                 height: 20,
               ),
-              ElevatedButton(
-                onPressed: () {},
-                child: Text(
-                  'Register',
-                  style: TextStyle(
-                      fontSize: 18
+              Align(
+                alignment: Alignment.centerRight,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/forgot_password');
+                  },
+                  child: Text(
+                    'Forgot Password',
+                    style: TextStyle(fontSize: 18),
                   ),
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await _progressDialog.show();
+                  if (_formKey.currentState.validate()) {
+                    dynamic result = await AuthService()
+                        .login(_emailController.text, _passwordController.text);
+
+                    if (result == null) {
+                      await _progressDialog.hide();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                          'Please check your credentials.',
+                        ),
+                      ));
+                    } else {
+                      await _progressDialog.hide();
+                      Navigator.pushNamed(context, '/');
+                    }
+                  } else {
+                    await _progressDialog.hide();
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                        'Form is not valid.',
+                      ),
+                    ));
+                  }
+                },
+                child: Text(
+                  'Access your account',
                 ),
               ),
               SizedBox(
@@ -114,19 +168,21 @@ class Login extends StatelessWidget {
                 children: [
                   Text(
                     'Don\'t have an account?',
-                    style: TextStyle(
-                        fontSize: 18
-                    ),
+                    style: TextStyle(fontSize: 18),
                   ),
                   SizedBox(
-                    width: 10,
+                    width: 5,
                   ),
-                  Text(
-                    'Register',
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/register');
+                    },
+                    child: Text(
+                      'Register',
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold),
                     ),
                   )
                 ],

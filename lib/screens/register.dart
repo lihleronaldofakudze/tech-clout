@@ -1,11 +1,43 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:tech_clout/constants.dart';
+import 'package:tech_clout/services/auth.dart';
+import 'package:tech_clout/services/database.dart';
 
-class Register extends StatelessWidget {
+class Register extends StatefulWidget {
   const Register({Key key}) : super(key: key);
 
   @override
+  _RegisterState createState() => _RegisterState();
+}
+
+class _RegisterState extends State<Register> {
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController _usernameController;
+  TextEditingController _passwordController;
+  TextEditingController _emailController;
+  TextEditingController _townController;
+  TextEditingController _confirmPasswordController;
+  ProgressDialog _progressDialog;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameController = TextEditingController();
+    _passwordController = TextEditingController();
+    _emailController = TextEditingController();
+    _townController = TextEditingController();
+    _confirmPasswordController = TextEditingController();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    _progressDialog = ProgressDialog(context,
+        type: ProgressDialogType.Normal,
+        textDirection: TextDirection.ltr,
+        isDismissible: false);
+    _progressDialog.style(message: 'Please wait');
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -14,44 +46,45 @@ class Register extends StatelessWidget {
             children: [
               Text(
                 'Welcome to Eswatini Tech Center...',
-                style: GoogleFonts.sourceCodePro(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               SizedBox(
                 height: 20,
               ),
               Text(
-                'Create an account',
+                'Please enter all details.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.sourceCodePro(
-                  fontSize: 18,
-                  color: Colors.grey
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               SizedBox(
-                height: 30,
+                height: 10,
               ),
               Form(
+                key: _formKey,
                 child: Column(
                   children: [
                     PhysicalModel(
                       color: Colors.white,
                       elevation: 8,
                       child: TextFormField(
+                        controller: _usernameController,
+                        keyboardType: TextInputType.text,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please enter username';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                             hintText: 'Username',
-                            hintStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 18
-                            ),
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 18),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.only(top: 16),
-                            prefixIcon: Icon(
-                                Icons.person_outline
-                            )
-                        ),
+                            prefixIcon: Icon(Icons.person_outline)),
                       ),
                     ),
                     SizedBox(
@@ -61,18 +94,23 @@ class Register extends StatelessWidget {
                       color: Colors.white,
                       elevation: 8,
                       child: TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please enter email address';
+                          } else if (!EmailValidator.validate(value)) {
+                            return 'Invalid Email Address';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
-                            hintText: 'Email',
-                            hintStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 18
-                            ),
+                            hintText: 'Email Address',
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 18),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.only(top: 15),
-                            prefixIcon: Icon(
-                              Icons.email_outlined
-                            )
-                        ),
+                            prefixIcon: Icon(Icons.email_outlined)),
                       ),
                     ),
                     SizedBox(
@@ -82,18 +120,21 @@ class Register extends StatelessWidget {
                       color: Colors.white,
                       elevation: 8,
                       child: TextFormField(
+                        controller: _townController,
+                        keyboardType: TextInputType.text,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please enter town';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                             hintText: 'Town',
-                            hintStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 18
-                            ),
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 18),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.only(top: 15),
-                            prefixIcon: Icon(
-                                Icons.location_on_outlined
-                            )
-                        ),
+                            prefixIcon: Icon(Icons.location_on_outlined)),
                       ),
                     ),
                     SizedBox(
@@ -103,21 +144,22 @@ class Register extends StatelessWidget {
                       color: Colors.white,
                       elevation: 8,
                       child: TextFormField(
+                        controller: _passwordController,
+                        obscureText: true,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please enter password';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                             hintText: 'Password',
-                            hintStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 18
-                            ),
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 18),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.only(top: 15),
-                            prefixIcon: Icon(
-                                Icons.lock_outline
-                            ),
-                            suffixIcon: Icon(
-                                Icons.remove_red_eye_outlined
-                            )
-                        ),
+                            prefixIcon: Icon(Icons.lock_outline),
+                            suffixIcon: Icon(Icons.remove_red_eye_outlined)),
                       ),
                     ),
                     SizedBox(
@@ -127,21 +169,24 @@ class Register extends StatelessWidget {
                       color: Colors.white,
                       elevation: 8,
                       child: TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: true,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Please re-enter password';
+                          } else if (value != _passwordController.text) {
+                            return 'Password do not match.';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                             hintText: 'Confirm Password',
-                            hintStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 18
-                            ),
+                            hintStyle:
+                                TextStyle(color: Colors.grey, fontSize: 18),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.only(top: 15),
-                            prefixIcon: Icon(
-                                Icons.lock_outline
-                            ),
-                            suffixIcon: Icon(
-                              Icons.remove_red_eye_outlined
-                            )
-                        ),
+                            prefixIcon: Icon(Icons.lock_outline),
+                            suffixIcon: Icon(Icons.remove_red_eye_outlined)),
                       ),
                     )
                   ],
@@ -151,12 +196,39 @@ class Register extends StatelessWidget {
                 height: 20,
               ),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () async {
+                  await _progressDialog.show();
+                  if (_formKey.currentState.validate()) {
+                    dynamic result = await AuthService().register(
+                        _emailController.text, _passwordController.text);
+
+                    if (result == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                          'Please check your credentials.',
+                        ),
+                      ));
+                    } else {
+                      await DatabaseService(uid: result.uid)
+                          .editUser(
+                              Constants().guy,
+                              _usernameController.text,
+                              _townController.text,
+                              'Hey, I\'m a proud member of Eswatini Tech Society.')
+                          .then((value) => Navigator.pushNamed(context, '/'));
+                    }
+                  } else {
+                    await _progressDialog.hide();
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                        'Form is not valid.',
+                      ),
+                    ));
+                  }
+                },
                 child: Text(
-                  'Register',
-                  style: TextStyle(
-                    fontSize: 18
-                  ),
+                  'Create an account',
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
               SizedBox(
@@ -167,19 +239,21 @@ class Register extends StatelessWidget {
                 children: [
                   Text(
                     'Already have an account?',
-                    style: TextStyle(
-                      fontSize: 18
-                    ),
+                    style: TextStyle(fontSize: 18),
                   ),
                   SizedBox(
-                    width: 10,
+                    width: 5,
                   ),
-                  Text(
-                    'Login',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.bold
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/login');
+                    },
+                    child: Text(
+                      'Login',
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18),
                     ),
                   )
                 ],

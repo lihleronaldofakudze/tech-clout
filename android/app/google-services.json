@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1071761668698",
+    "project_id": "tech-clout",
+    "storage_bucket": "tech-clout.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1071761668698:android:38987b4fc6c90efbd53663",
+        "android_client_info": {
+          "package_name": "io.cloutdevelopers.tech_clout"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1071761668698-1jqvej034u25g6715l4g1r3474bf05u5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6UGj9_V2tyyJ2SWs6sjsiqiNBcZLSy5k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1071761668698-1jqvej034u25g6715l4g1r3474bf05u5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

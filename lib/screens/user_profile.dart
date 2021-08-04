@@ -1,187 +1,117 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:tech_clout/models/registered_user.dart';
+import 'package:tech_clout/models/user.dart';
+import 'package:tech_clout/services/auth.dart';
+import 'package:tech_clout/services/database.dart';
+import 'package:tech_clout/widgets/loading.dart';
+import 'package:tech_clout/widgets/posts_list.dart';
 
 class UserProfile extends StatelessWidget {
   const UserProfile({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: IconThemeData(
-          color: Colors.black
-        ),
-        centerTitle: true,
-        title: Text(
-          'TechClout',
-          style: GoogleFonts.sourceCodePro(
-            color: Colors.black
-          ),
-        ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(10),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 40,
-                ),
-                SizedBox(
-                  width: 8,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+    final registeredUser = Provider.of<RegisteredUser>(context);
+    return StreamBuilder<User>(
+      stream: DatabaseService(uid: registeredUser.uid).user,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          User user = snapshot.data;
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              iconTheme: IconThemeData(color: Colors.black),
+              title: Text(
+                user.username,
+                style: GoogleFonts.sourceCodePro(color: Colors.black),
+              ),
+              actions: [
+                user.uid != registeredUser.uid
+                    ? IconButton(
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.save,
+                        ),
+                      )
+                    : Container(),
+                user.uid != registeredUser.uid
+                    ? IconButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/edit_profile');
+                        },
+                        icon: Icon(Icons.edit))
+                    : Container(),
+                user.uid != registeredUser.uid
+                    ? IconButton(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(
+                                'TechClout',
+                                style: GoogleFonts.sourceCodePro(),
+                              ),
+                              content: Text('Are you sure you want to exit?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {},
+                                  child: Text('No'),
+                                ),
+                                TextButton(
+                                  onPressed: () async {
+                                    await AuthService().logOut().then((value) =>
+                                        Navigator.pushNamed(context, '/'));
+                                  },
+                                  child: Text('Yes'),
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                        icon: Icon(Icons.logout))
+                    : Container(),
+              ],
+            ),
+            body: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.white,
+                    backgroundImage: NetworkImage(user.image),
+                  ),
+                  SizedBox(
+                    width: 8,
+                  ),
                   Text(
-                    'Lihle Fakudze',
-                    style: GoogleFonts.sourceCodePro(
-                        color: Colors.black,
-                        fontSize: 18
-                    ),
+                    registeredUser.email,
+                    style: GoogleFonts.sourceCodePro(color: Colors.grey),
                   ),
-                    Text(
-                        'lihleronaldofakudze@gmail.com',
-                        style: GoogleFonts.sourceCodePro(
-                          color: Colors.grey
-                        ),
-                    ),
-                  ]
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    children: [
-                      Text(
-                        '0',
-                        style: GoogleFonts.sourceCodePro(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      Text(
-                          'Posts',
-                        style: GoogleFonts.sourceCodePro(
-                          fontSize: 18,
-                        ),
-                      ),
-                    ],
+                  SizedBox(
+                    width: 8,
                   ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    children: [
-                      Text(
-                          '0',
-                        style: GoogleFonts.sourceCodePro(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      Text(
-                          'Followers',
-                        style: GoogleFonts.sourceCodePro(
-                          fontSize: 18,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    user.bio,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.black, fontSize: 18),
                   ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    children: [
-                      Text(
-                          '0',
-                        style: GoogleFonts.sourceCodePro(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold
-                        ),
-                      ),
-                      Text(
-                          'Following',
-                        style: GoogleFonts.sourceCodePro(
-                            fontSize: 18,
-                        ),
-                      ),
-                    ],
+                  SizedBox(
+                    height: 20,
                   ),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            ElevatedButton(
-              onPressed: () {},
-              child: Text(
-                'Edit Profile',
-                style: GoogleFonts.sourceCodePro(
-                  fontSize: 18
-                ),
+                  Expanded(child: PostsList()),
+                ],
               ),
             ),
-            SizedBox(
-              height: 10,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Text(
-                  'All Posts',
-                  style: GoogleFonts.sourceCodePro(),
-                ),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.list_outlined
-                  ),
-                )
-              ],
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Text(
-              'No Posts',
-              style: GoogleFonts.sourceCodePro(
-                fontSize: 18,
-                color: Colors.grey
-              ),
-            ),
-            Spacer(),
-            PhysicalModel(
-              color: Colors.white,
-              elevation: 10,
-              child: Container(
-                color: Colors.white,
-                padding: EdgeInsets.all(15),
-                width: double.infinity,
-                child: Center(
-                  child: Text(
-                    'Log Out',
-                    style: GoogleFonts.sourceCodePro(
-                      fontSize: 18
-                    ),
-                  ),
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
+          );
+        } else {
+          return Loading();
+        }
+      },
     );
   }
 }

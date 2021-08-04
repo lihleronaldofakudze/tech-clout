@@ -1,10 +1,26 @@
-import 'package:tech_clout/models/user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Post {
-  final User user;
+  final String id;
+  final String uid;
+  final String userImage;
+  final String username;
+  final String town;
+  final String image;
   final String message;
-  int likes;
-  int comments;
+  final likes;
+  final savedBy;
+  final Timestamp postedAt;
 
-  Post({this.user, this.message, this.likes, this.comments});
+  Post(
+      {this.id,
+      this.uid,
+      this.userImage,
+      this.username,
+      this.town,
+      this.image,
+      this.message,
+      this.likes,
+      this.savedBy,
+      this.postedAt});
 }
