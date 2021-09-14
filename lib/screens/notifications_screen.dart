@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class Notifications extends StatelessWidget {
-  const Notifications({Key key}) : super(key: key);
+class NotificationsScreen extends StatelessWidget {
+  const NotificationsScreen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

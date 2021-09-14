@@ -2,21 +2,23 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:tech_clout/models/post.dart';
-import 'package:tech_clout/models/registered_user.dart';
-import 'package:tech_clout/models/user.dart';
-import 'package:tech_clout/screens/add_post.dart';
-import 'package:tech_clout/screens/comments.dart';
-import 'package:tech_clout/screens/edit_profile.dart';
-import 'package:tech_clout/screens/forgot_password.dart';
-import 'package:tech_clout/screens/home.dart';
-import 'package:tech_clout/screens/login.dart';
-import 'package:tech_clout/screens/register.dart';
-import 'package:tech_clout/screens/user_profile.dart';
-import 'package:tech_clout/screens/welcome.dart';
+import 'package:tech_clout/models/Clouter.dart';
+import 'package:tech_clout/models/Post.dart';
+import 'package:tech_clout/models/RegisteredUser.dart';
+import 'package:tech_clout/screens/add_post_screen.dart';
+import 'package:tech_clout/screens/bio_screen.dart';
+import 'package:tech_clout/screens/comments_screen.dart';
+import 'package:tech_clout/screens/edit_profile_screen.dart';
+import 'package:tech_clout/screens/forgot_password_screen.dart';
+import 'package:tech_clout/screens/home_screen.dart';
+import 'package:tech_clout/screens/login_screen.dart';
+import 'package:tech_clout/screens/messages_screen.dart';
+import 'package:tech_clout/screens/register_screen.dart';
+import 'package:tech_clout/screens/saved_screen.dart';
+import 'package:tech_clout/screens/user_profile_screen.dart';
+import 'package:tech_clout/screens/welcome_screen.dart';
 import 'package:tech_clout/services/auth.dart';
 import 'package:tech_clout/services/database.dart';
-import 'package:tech_clout/models/comment.dart';
 
 import 'auth_change.dart';
 
@@ -35,24 +37,24 @@ class MyApp extends StatelessWidget {
             value: AuthService().user, initialData: RegisteredUser()),
         StreamProvider<List<Post>>.value(
             value: DatabaseService().posts, initialData: []),
-        StreamProvider<List<User>>.value(
+        StreamProvider<List<Clouter>>.value(
             value: DatabaseService().users, initialData: []),
-        StreamProvider<List<Comment>>.value(
-          value: DatabaseService().comments, initialData: []
-        )
       ],
       child: MaterialApp(
         routes: {
           '/': (context) => AuthChange(),
-          '/welcome': (context) => Welcome(),
-          '/login': (context) => Login(),
-          '/forgot_password': (context) => ForgotPassword(),
-          '/register': (context) => Register(),
-          '/home': (context) => Home(),
-          '/edit_profile': (context) => EditProfile(),
-          '/user_profile': (context) => UserProfile(),
-          '/add_post': (context) => AddPost(),
-          '/comments': (context) => Comments()
+          '/welcome': (context) => WelcomeScreen(),
+          '/login': (context) => LoginScreen(),
+          '/forgot_password': (context) => ForgotPasswordScreen(),
+          '/register': (context) => RegisterScreen(),
+          '/home': (context) => HomeScreen(),
+          '/edit_profile': (context) => EditProfileScreen(),
+          '/user_profile': (context) => UserProfileScreen(),
+          '/add_post': (context) => AddPostScreen(),
+          '/comments': (context) => CommentsScreen(),
+          '/saved': (context) => SavedScreen(),
+          '/bio': (context) => BioScreen(),
+          '/chat': (context) => MessagesScreen(),
         },
         title: 'Tech Clout',
         debugShowCheckedModeBanner: false,

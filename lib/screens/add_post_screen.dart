@@ -7,19 +7,19 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:tech_clout/models/registered_user.dart';
-import 'package:tech_clout/models/user.dart';
+import 'package:tech_clout/models/Clouter.dart';
+import 'package:tech_clout/models/RegisteredUser.dart';
 import 'package:tech_clout/services/database.dart';
 import 'package:tech_clout/widgets/loading.dart';
 
-class AddPost extends StatefulWidget {
-  const AddPost({Key key}) : super(key: key);
+class AddPostScreen extends StatefulWidget {
+  const AddPostScreen({Key key}) : super(key: key);
 
   @override
-  _AddPostState createState() => _AddPostState();
+  _AddPostScreenState createState() => _AddPostScreenState();
 }
 
-class _AddPostState extends State<AddPost> {
+class _AddPostScreenState extends State<AddPostScreen> {
   PickedFile _image = PickedFile('');
   final _picker = ImagePicker();
   final _messageController = TextEditingController();
@@ -56,11 +56,11 @@ class _AddPostState extends State<AddPost> {
           style: TextStyle(color: Colors.black),
         ),
       ),
-      body: StreamBuilder<User>(
+      body: StreamBuilder<Clouter>(
         stream: DatabaseService(uid: registeredUser.uid).user,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            User user = snapshot.data;
+            Clouter user = snapshot.data;
 
             return SingleChildScrollView(
               padding: EdgeInsets.all(23),
@@ -147,8 +147,7 @@ class _AddPostState extends State<AddPost> {
                           uploadTask.whenComplete(() {
                             reference.getDownloadURL().then((url) async {
                               await DatabaseService(uid: registeredUser.uid)
-                                  .addPost(user.image, user.username, user.town,
-                                      _messageController.text, url)
+                                  .addPost(_messageController.text, url)
                                   .then((value) async {
                                 await _progressDialog.hide();
                                 Navigator.pushNamed(context, '/');

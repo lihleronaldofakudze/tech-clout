@@ -3,7 +3,7 @@ description: Eswatini Technology Talks Social Network.
 
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
@@ -42,3 +42,4 @@ flutter:
     - assets/images/login.png
     - assets/images/logo.png
     - assets/images/guy.png
+    - assets/images/background.jpg

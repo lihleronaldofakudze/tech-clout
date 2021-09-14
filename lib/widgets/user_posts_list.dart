@@ -6,14 +6,15 @@ import 'package:tech_clout/models/RegisteredUser.dart';
 import 'package:tech_clout/models/Clouter.dart';
 import 'package:tech_clout/services/database.dart';
 
-class PostsList extends StatefulWidget {
-  const PostsList({Key key}) : super(key: key);
+class UserPostsList extends StatefulWidget {
+  final String userId;
+  const UserPostsList({Key key, this.userId}) : super(key: key);
 
   @override
-  _PostsListState createState() => _PostsListState();
+  _UserPostsListState createState() => _UserPostsListState();
 }
 
-class _PostsListState extends State<PostsList> {
+class _UserPostsListState extends State<UserPostsList> {
   @override
   Widget build(BuildContext context) {
     final posts = Provider.of<List<Post>>(context);
@@ -21,7 +22,7 @@ class _PostsListState extends State<PostsList> {
     return ListView.builder(
       itemCount: posts.length,
       itemBuilder: (context, index) {
-        return Card(
+        return widget.userId != posts[index].uid  ? Container() : Card(
           margin: EdgeInsets.all(10),
           elevation: 10,
           child: InkWell(
@@ -55,26 +56,25 @@ class _PostsListState extends State<PostsList> {
                                   .savedBy
                                   .contains(registeredUser.uid)) {
                                 await DatabaseService(
-                                        uid: registeredUser.uid,
-                                        postId: posts[index].id)
-                                    .remove();
+                                    uid: registeredUser.uid,
+                                    postId: posts[index].id)
+                                    .save();
                               } else {
                                 await DatabaseService(
-                                        uid: registeredUser.uid,
-                                        postId: posts[index].id)
-                                    .save();
+                                    uid: registeredUser.uid,
+                                    postId: posts[index].id)
+                                    .remove();
                               }
                             },
-                            icon: Icon(
-                              posts[index].savedBy.contains(registeredUser.uid)
-                                  ? Icons.done
-                                  : Icons.archive_outlined,
-                              color: Colors.green,
-                            ),
+                            icon: Icon(posts[index]
+                                .savedBy
+                                .contains(registeredUser.uid)
+                                ? Icons.done
+                                : Icons.archive_outlined),
                           ),
                         ),
                         Container(
-                          height: 300,
+                          height: 250,
                           decoration: BoxDecoration(
                               image: DecorationImage(
                                   image: NetworkImage(posts[index].image),
@@ -95,15 +95,15 @@ class _PostsListState extends State<PostsList> {
                             children: [
                               posts[index].likes.length == 0
                                   ? Text(
-                                      'No Likes',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    )
+                                'No Likes',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              )
                                   : Text(
-                                      '${posts[index].likes.length} Likes',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
+                                '${posts[index].likes.length} Likes',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
                               Row(
                                 children: [
                                   IconButton(
@@ -112,23 +112,23 @@ class _PostsListState extends State<PostsList> {
                                           .likes
                                           .contains(registeredUser.uid)) {
                                         await DatabaseService(
-                                                uid: registeredUser.uid,
-                                                postId: posts[index].id)
-                                            .unlike();
+                                            uid: registeredUser.uid,
+                                            postId: posts[index].id)
+                                            .like();
                                       } else {
                                         await DatabaseService(
-                                                uid: registeredUser.uid,
-                                                postId: posts[index].id)
-                                            .like();
+                                            uid: registeredUser.uid,
+                                            postId: posts[index].id)
+                                            .unlike();
                                       }
                                     },
                                     icon: posts[index]
-                                            .likes
-                                            .contains(registeredUser.uid)
+                                        .likes
+                                        .contains(registeredUser.uid)
                                         ? Icon(
-                                            Icons.favorite,
-                                            color: Colors.red,
-                                          )
+                                      Icons.favorite,
+                                      color: Colors.red,
+                                    )
                                         : Icon(Icons.favorite_outlined),
                                   ),
                                   IconButton(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tech_clout/models/registered_user.dart';
-import 'package:tech_clout/screens/home.dart';
-import 'package:tech_clout/screens/welcome.dart';
+import 'package:tech_clout/models/RegisteredUser.dart';
+import 'package:tech_clout/screens/home_screen.dart';
+import 'package:tech_clout/screens/welcome_screen.dart';
 
 class AuthChange extends StatelessWidget {
   const AuthChange({Key key}) : super(key: key);
@@ -10,6 +10,6 @@ class AuthChange extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<RegisteredUser>(context);
-    return user == null ? Welcome() : Home();
+    return user == null ? WelcomeScreen() : HomeScreen();
   }
 }

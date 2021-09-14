@@ -1,35 +1,45 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:tech_clout/models/comment.dart';
-import 'package:tech_clout/models/post.dart';
-import 'package:tech_clout/models/user.dart';
+import 'package:tech_clout/models/Chat.dart';
+import 'package:tech_clout/models/Clouter.dart';
+import 'package:tech_clout/models/Comment.dart';
+import 'package:tech_clout/models/Message.dart';
+import 'package:tech_clout/models/Post.dart';
 
 class DatabaseService {
   final String uid;
   final String postId;
+  final String chatId;
   final CollectionReference postsCollection =
       FirebaseFirestore.instance.collection('posts');
   final CollectionReference usersCollection =
       FirebaseFirestore.instance.collection('users');
   final CollectionReference commentsCollection =
       FirebaseFirestore.instance.collection('comments');
+  final CollectionReference chatsCollection =
+      FirebaseFirestore.instance.collection('chats');
 
-  DatabaseService({this.uid, this.postId});
+  DatabaseService({this.uid, this.postId, this.chatId});
 
   //edit user
   Future editUser(
-      String image, String username, String town, String bio) async {
+      {String image,
+      String username,
+      String town,
+      String bio,
+      String email}) async {
     return usersCollection.doc(uid).set({
       'uid': uid,
       'image': image,
       'username': username,
+      'email': email,
       'town': town,
       'bio': bio
     });
   }
 
   //get user
-  User _userFromSnapshot(DocumentSnapshot snapshot) {
-    return User(
+  Clouter _userFromSnapshot(DocumentSnapshot snapshot) {
+    return Clouter(
         image: snapshot['image'] ?? '',
         username: snapshot['username'] ?? '',
         town: snapshot['town'] ?? '',
@@ -37,14 +47,14 @@ class DatabaseService {
   }
 
   //user stream
-  Stream<User> get user {
+  Stream<Clouter> get user {
     return usersCollection.doc(uid).snapshots().map(_userFromSnapshot);
   }
 
   //Users List Snapshot
-  List<User> _usersListSnapshot(QuerySnapshot snapshot) {
+  List<Clouter> _usersListSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
-      return User(
+      return Clouter(
           uid: doc.get('uid'),
           username: doc.get('username'),
           image: doc.get('image'),
@@ -54,18 +64,14 @@ class DatabaseService {
   }
 
   //Users Stream
-  Stream<List<User>> get users {
+  Stream<List<Clouter>> get users {
     return usersCollection.snapshots().map(_usersListSnapshot);
   }
 
   //Add Post
-  Future addPost(String userImage, String username, String town, String message,
-      image) async {
+  Future addPost(String message, image) async {
     return await postsCollection.add({
       'uid': uid,
-      'userImage': userImage,
-      'username': username,
-      'town': town,
       'image': image,
       'message': message,
       'likes': [],
@@ -79,9 +85,7 @@ class DatabaseService {
     return snapshot.docs.map((doc) {
       return Post(
           id: doc.id,
-          userImage: doc.get('userImage'),
-          username: doc.get('username'),
-          town: doc.get('town'),
+          uid: doc.get('uid'),
           image: doc.get('image'),
           message: doc.get('message'),
           likes: doc.get('likes'),
@@ -92,7 +96,10 @@ class DatabaseService {
 
 //Posts List Stream
   Stream<List<Post>> get posts {
-    return postsCollection.snapshots().map(_postsListSnapshot);
+    return postsCollection
+        .orderBy('postedAt', descending: true)
+        .snapshots()
+        .map(_postsListSnapshot);
   }
 
   //Post Snapshot
@@ -100,9 +107,6 @@ class DatabaseService {
     return Post(
         uid: snapshot.get('uid'),
         id: snapshot.id,
-        userImage: snapshot.get('userImage'),
-        username: snapshot.get('username'),
-        town: snapshot.get('town'),
         image: snapshot.get('image'),
         message: snapshot.get('message'),
         likes: snapshot.get('likes'),
@@ -144,14 +148,11 @@ class DatabaseService {
   }
 
   //Add Comment
-  Future addComment(String image, comment, username) async {
-    return postsCollection.doc(postId).collection('comments').add({
-      'uid': uid,
-      'image': image,
-      'comment': comment,
-      'username': username,
-      'commentedAt': DateTime.now()
-    });
+  Future addComment(comment) async {
+    return postsCollection
+        .doc(postId)
+        .collection('comments')
+        .add({'uid': uid, 'comment': comment, 'commentedAt': DateTime.now()});
   }
 
   //Comment List Snapshot
@@ -159,15 +160,77 @@ class DatabaseService {
     return snapshot.docs.map((doc) {
       return Comment(
           uid: doc.get('uid'),
-          username: doc.get('username'),
-          image: doc.get('image'),
           comment: doc.get('comment'),
           commentedAt: doc.get('commentedAt'));
     }).toList();
   }
 
   Stream<List<Comment>> get comments {
-    return postsCollection.doc(postId).collection('comments').snapshots().map(_commentsListSnapshot);
+    return postsCollection
+        .doc(postId)
+        .collection('comments')
+        .snapshots()
+        .map(_commentsListSnapshot);
   }
 
+  //Add Chat
+  Future addChat({String receiver}) async {
+    DocumentSnapshot documentSnapshotOne =
+        await chatsCollection.doc('${uid}_$receiver').get();
+    DocumentSnapshot documentSnapshotTwo =
+        await chatsCollection.doc('${receiver}_$uid').get();
+
+    if (documentSnapshotOne.exists || documentSnapshotTwo.exists) {
+      return null;
+    } else {
+      return chatsCollection.doc('${uid}_$receiver').set({
+        'chatters': [uid, receiver],
+        'lastMessage': 'Tech Clouter last said'
+      });
+    }
+  }
+
+  List<Chat> _chatsListSnapshot(QuerySnapshot snapshot) {
+    return snapshot.docs.map((doc) {
+      return Chat(
+          id: doc.id,
+          chatters: doc.get('chatters'),
+          lastMessage: doc.get('lastMessage'));
+    }).toList();
+  }
+
+  Stream<List<Chat>> get chats {
+    return chatsCollection
+        .where('chatters', arrayContains: uid)
+        .snapshots()
+        .map(_chatsListSnapshot);
+  }
+
+  Future addMessage({message}) {
+    return chatsCollection
+        .doc(chatId)
+        .update({'lastMessage': message}).then((value) {
+      chatsCollection
+          .doc(chatId)
+          .collection('messages')
+          .add({'message': message, 'uid': uid, 'createdAt': DateTime.now()});
+    });
+  }
+
+  List<Message> _messagesListSnapshot(QuerySnapshot snapshot) {
+    return snapshot.docs.map((doc) {
+      return Message(
+          uid: doc.get('uid'),
+          message: doc.get('message'),
+          createdAt: doc.get('createdAt'));
+    }).toList();
+  }
+
+  Stream<List<Message>> get messages {
+    return chatsCollection
+        .doc(chatId)
+        .collection('messages')
+        .snapshots()
+        .map(_messagesListSnapshot);
+  }
 }

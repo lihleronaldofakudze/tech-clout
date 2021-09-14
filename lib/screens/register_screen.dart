@@ -5,14 +5,14 @@ import 'package:tech_clout/constants.dart';
 import 'package:tech_clout/services/auth.dart';
 import 'package:tech_clout/services/database.dart';
 
-class Register extends StatefulWidget {
-  const Register({Key key}) : super(key: key);
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({Key key}) : super(key: key);
 
   @override
-  _RegisterState createState() => _RegisterState();
+  _RegisterScreenState createState() => _RegisterScreenState();
 }
 
-class _RegisterState extends State<Register> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   TextEditingController _usernameController;
   TextEditingController _passwordController;
@@ -211,10 +211,11 @@ class _RegisterState extends State<Register> {
                     } else {
                       await DatabaseService(uid: result.uid)
                           .editUser(
-                              Constants().guy,
-                              _usernameController.text,
-                              _townController.text,
-                              'Hey, I\'m a proud member of Eswatini Tech Society.')
+                              image: Constants().guy,
+                              username: _usernameController.text,
+                              town: _townController.text,
+                              email: _emailController.text,
+                              bio: 'Hey, I\'m a proud member of Eswatini Tech Society.')
                           .then((value) => Navigator.pushNamed(context, '/'));
                     }
                   } else {

@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:tech_clout/screens/chats.dart';
-import 'package:tech_clout/screens/posts.dart';
-import 'package:tech_clout/screens/users.dart';
+import 'package:tech_clout/screens/chats_screen.dart';
+import 'package:tech_clout/screens/posts_screen.dart';
+import 'package:tech_clout/screens/users_screen.dart';
 
-class Home extends StatefulWidget {
-  const Home({Key key}) : super(key: key);
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key key}) : super(key: key);
 
   @override
-  _HomeState createState() => _HomeState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -19,6 +19,12 @@ class _HomeState extends State<Home> {
         appBar: AppBar(
           iconTheme: IconThemeData(color: Colors.black),
           backgroundColor: Colors.white,
+          leading: Container(
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('assets/images/logo.png'),
+                    fit: BoxFit.cover)),
+          ),
           elevation: 0,
           title: Text(
             'TechClout',
@@ -53,6 +59,7 @@ class _HomeState extends State<Home> {
                 ),
               ]),
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.black,
           onPressed: () {
@@ -61,7 +68,7 @@ class _HomeState extends State<Home> {
           child: Icon(Icons.add),
         ),
         body: TabBarView(
-          children: [Posts(), Chats(), Users()],
+          children: [PostsScreen(), ChatsScreen(), UsersScreen()],
         ),
       ),
     );

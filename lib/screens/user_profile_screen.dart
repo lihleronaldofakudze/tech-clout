@@ -2,24 +2,24 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:tech_clout/models/registered_user.dart';
-import 'package:tech_clout/models/user.dart';
+import 'package:tech_clout/models/Clouter.dart';
+import 'package:tech_clout/models/RegisteredUser.dart';
 import 'package:tech_clout/services/auth.dart';
 import 'package:tech_clout/services/database.dart';
 import 'package:tech_clout/widgets/loading.dart';
-import 'package:tech_clout/widgets/posts_list.dart';
+import 'package:tech_clout/widgets/user_posts_list.dart';
 
-class UserProfile extends StatelessWidget {
-  const UserProfile({Key key}) : super(key: key);
+class UserProfileScreen extends StatelessWidget {
+  const UserProfileScreen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final registeredUser = Provider.of<RegisteredUser>(context);
-    return StreamBuilder<User>(
+    return StreamBuilder<Clouter>(
       stream: DatabaseService(uid: registeredUser.uid).user,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          User user = snapshot.data;
+          Clouter user = snapshot.data;
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.white,
@@ -32,7 +32,9 @@ class UserProfile extends StatelessWidget {
               actions: [
                 user.uid != registeredUser.uid
                     ? IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/saved');
+                        },
                         icon: Icon(
                           Icons.save,
                         ),
@@ -58,7 +60,9 @@ class UserProfile extends StatelessWidget {
                               content: Text('Are you sure you want to exit?'),
                               actions: [
                                 TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
                                   child: Text('No'),
                                 ),
                                 TextButton(
@@ -103,7 +107,10 @@ class UserProfile extends StatelessWidget {
                   SizedBox(
                     height: 20,
                   ),
-                  Expanded(child: PostsList()),
+                  Expanded(
+                      child: UserPostsList(
+                    userId: registeredUser.uid,
+                  )),
                 ],
               ),
             ),
